@@ -8,19 +8,12 @@ import 'package:jo_univ_flutter/views/splash_view.dart';
 /// Contains static constants for route paths and a `GoRouter` instance
 /// configured with the defined routes and necessary dependencies.
 abstract class AppRouter {
-  static const String kSplashView = '/SplashView';
   static const String kSignInView = '/SignInView';
 
   static const String kHomeView = '/homeView';
 
   static final router = GoRouter(routes: [
-    GoRoute(
-      path: kSplashView,
-      pageBuilder: (context, state) => _fadeTransitionPage(
-        child: SplashView(),
-        duration: const Duration(milliseconds: 1000),
-      ),
-    ),
+    GoRoute(path: '/', builder: (context, state) => const SplashView()),
     GoRoute(
       path: kSignInView,
       pageBuilder: (context, state) => _fadeTransitionPage(
