@@ -4,16 +4,17 @@ import 'package:go_router/go_router.dart';
 import 'package:jo_univ_flutter/core/utils/App_router.dart';
 import 'package:jo_univ_flutter/views/manager/auth_cubit.dart';
 
-class SignInView extends StatefulWidget {
-  const SignInView({super.key});
+class AccountCreationView extends StatefulWidget {
+  const AccountCreationView({super.key});
 
   @override
-  _SignInViewState createState() => _SignInViewState();
+  _AccountCreationViewState createState() => _AccountCreationViewState();
 }
 
-class _SignInViewState extends State<SignInView>
+class _AccountCreationViewState extends State<AccountCreationView>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
+  final TextEditingController nationalIdController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
@@ -45,6 +46,7 @@ class _SignInViewState extends State<SignInView>
 
   @override
   void dispose() {
+    nationalIdController.dispose();
     emailController.dispose();
     passwordController.dispose();
     _animationController.dispose();
@@ -56,7 +58,7 @@ class _SignInViewState extends State<SignInView>
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Sign In',
+          'Create Account',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -83,7 +85,7 @@ class _SignInViewState extends State<SignInView>
               if (state is AuthSuccess) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Sign-In Successful'),
+                    content: Text('Registration Successful'),
                     backgroundColor: Colors.green,
                   ),
                 );
@@ -115,7 +117,7 @@ class _SignInViewState extends State<SignInView>
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             Text(
-                              'Welcome Back',
+                              'Create Your Account',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: Colors.white,
@@ -124,22 +126,24 @@ class _SignInViewState extends State<SignInView>
                               ),
                             ),
                             SizedBox(height: 30),
+                            _buildNationalIdField(),
+                            SizedBox(height: 20),
                             _buildEmailField(),
                             SizedBox(height: 20),
                             _buildPasswordField(),
                             SizedBox(height: 30),
-                            _buildSignInButton(),
+                            _buildRegisterButton(),
                             SizedBox(height: 20),
                             Text(
-                              'Don\'t have an account?',
+                              'Already have an account?',
                               textAlign: TextAlign.center,
                               style: TextStyle(color: Colors.white),
                             ),
                             TextButton(
                               onPressed: () => GoRouter.of(context)
-                                  .go(AppRouter.kAccountCreationView),
+                                  .go(AppRouter.kSignInView),
                               child: Text(
-                                'Sign Up',
+                                'Sign In',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
@@ -157,6 +161,24 @@ class _SignInViewState extends State<SignInView>
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildNationalIdField() {
+    return TextFormField(
+      controller: nationalIdController,
+      keyboardType: TextInputType.number,
+      decoration: _buildInputDecoration(
+        labelText: 'National ID',
+        icon: Icons.credit_card,
+      ),
+      validator: (value) {
+        if (value == null || value.length != 14) {
+          return 'National ID must be 14 digits';
+        }
+        return null;
+      },
+      style: TextStyle(color: Colors.white),
     );
   }
 
@@ -238,14 +260,15 @@ class _SignInViewState extends State<SignInView>
     );
   }
 
-  Widget _buildSignInButton() {
+  Widget _buildRegisterButton() {
     return BlocBuilder<AuthCubit, AuthState>(
       builder: (context, state) {
         return ElevatedButton(
           onPressed: state is! AuthLoading
               ? () {
                   if (_formKey.currentState!.validate()) {
-                    context.read<AuthCubit>().signIn(
+                    context.read<AuthCubit>().register(
+                          nationalIdController.text.trim(),
                           emailController.text.trim(),
                           passwordController.text,
                         );
@@ -264,7 +287,7 @@ class _SignInViewState extends State<SignInView>
                   valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6A11CB)),
                 )
               : Text(
-                  'Sign In',
+                  'Register',
                   style: TextStyle(
                     color: Color(0xFF6A11CB),
                     fontSize: 18,

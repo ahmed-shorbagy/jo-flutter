@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "974341023422",
+    "project_id": "jo-flutter",
+    "storage_bucket": "jo-flutter.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:974341023422:android:25bc11811c799c0ff560ef",
+        "android_client_info": {
+          "package_name": "com.example.jo_univ_flutter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyASfr0SA_X3m2VDN2RrdXliDeeGYA_GEns"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

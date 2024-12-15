@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:jo_univ_flutter/core/utils/logger.dart';
 
 abstract class AuthState {}
 
@@ -31,7 +32,7 @@ class AuthCubit extends Cubit<AuthState> {
         password: password,
       );
 
-      // Step 2: Save additional user data (e.g., National ID) in Firestore
+      // Step 2: Save user data in Firestore
       await _firestore.collection('users').doc(userCredential.user?.uid).set({
         'email': email,
         'nationalId': nationalId,
@@ -46,16 +47,38 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  void login(String email, String password) async {
+  void signIn(String email, String password) async {
     emit(AuthLoading());
     try {
-      // Log in the user
-      await _firebaseAuth.signInWithEmailAndPassword(
-          email: email, password: password);
+      // Step 1: Sign in user with Firebase Authentication
+      UserCredential userCredential =
+          await _firebaseAuth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // Step 2: Fetch user data from Firestore
+      DocumentSnapshot userDoc = await _firestore
+          .collection('users')
+          .doc(userCredential.user?.uid)
+          .get();
+
+      if (userDoc.exists) {
+        // Optional: Retrieve and log user data
+        Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+        print('User data: $userData');
+      } else {
+        throw FirebaseAuthException(
+          code: 'user-not-found',
+          message: 'No user data found in Firestore.',
+        );
+      }
+
       emit(AuthSuccess());
     } on FirebaseAuthException catch (e) {
       emit(AuthError(e.message ?? "Login failed"));
     } catch (e) {
+      Logger.error(e.toString());
       emit(AuthError("An unknown error occurred"));
     }
   }
