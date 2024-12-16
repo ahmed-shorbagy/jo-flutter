@@ -45,19 +45,19 @@ class HomeView extends StatelessWidget {
               ListTile(
                 leading: Icon(Icons.school, color: Colors.white),
                 title: Text('Apply Now', style: TextStyle(color: Colors.white)),
-                onTap: () => GoRouter.of(context).go(AppRouter.kApplyView),
+                onTap: () => GoRouter.of(context).push(AppRouter.kApplyView),
               ),
               ListTile(
                 leading: Icon(Icons.book, color: Colors.white),
                 title: Text('Courses', style: TextStyle(color: Colors.white)),
-                onTap: () => GoRouter.of(context).go(AppRouter.kCoursesView),
+                onTap: () => GoRouter.of(context).push(AppRouter.kCoursesView),
               ),
               ListTile(
                 leading: Icon(Icons.assignment, color: Colors.white),
                 title: Text('My Application',
                     style: TextStyle(color: Colors.white)),
                 onTap: () =>
-                    GoRouter.of(context).go(AppRouter.kApplicationView),
+                    GoRouter.of(context).push(AppRouter.kApplicationView),
               ),
             ],
           ),
@@ -85,10 +85,8 @@ class HomeView extends StatelessWidget {
               GoRouter.of(context).go(AppRouter.kHomeView);
               break;
             case 1:
-              GoRouter.of(context).go(AppRouter.kExploreView);
               break;
             case 2:
-              GoRouter.of(context).go(AppRouter.kProfileView);
               break;
           }
         },

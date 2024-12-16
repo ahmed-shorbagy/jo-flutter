@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:jo_univ_flutter/views/account_creation_view.dart';
 import 'package:jo_univ_flutter/views/application_form_view.dart';
+import 'package:jo_univ_flutter/views/courses_view.dart';
 import 'package:jo_univ_flutter/views/home_view.dart';
 import 'package:jo_univ_flutter/views/sign_in_view.dart';
 import 'package:jo_univ_flutter/views/splash_view.dart';
@@ -20,6 +21,7 @@ abstract class AppRouter {
   static const String kApplyView = '/applyView';
   static const String kExploreView = '/exploreView';
   static const String kProfileView = '/profileView';
+  static const String kcoursesView = '/coursesView';
 
   static const String kHomeView = '/homeView';
 
@@ -47,6 +49,13 @@ abstract class AppRouter {
       ),
     ),
     GoRoute(
+      path: kcoursesView,
+      pageBuilder: (context, state) => _fadeTransitionPage(
+        child: const CoursesView(),
+        duration: const Duration(milliseconds: 1000),
+      ),
+    ),
+    GoRoute(
       path: kApplyView,
       pageBuilder: (context, state) => _fadeTransitionPage(
         child: const ApplicationFormView(),
@@ -56,7 +65,7 @@ abstract class AppRouter {
     GoRoute(
       path: kApplicationView,
       pageBuilder: (context, state) => _fadeTransitionPage(
-        child: const ApplicationStatusView(),
+        child: ApplicationStatusView(),
         duration: const Duration(milliseconds: 1000),
       ),
     )

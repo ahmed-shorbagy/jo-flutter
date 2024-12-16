@@ -85,7 +85,7 @@ class _SplashViewState extends State<SplashView>
                     child: ScaleTransition(
                       scale: _logoAnimation,
                       child: Image.asset(
-                        'assets/images/iaems.jpeg',
+                        'assets/images/image1.png',
                         width: 200,
                         height: 200,
                         fit: BoxFit.contain,
