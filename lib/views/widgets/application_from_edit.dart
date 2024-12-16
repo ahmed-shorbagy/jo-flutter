@@ -1,83 +1,49 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:jo_univ_flutter/core/utils/notifications_service.dart';
+import 'package:jo_univ_flutter/models/application_model.dart';
+import 'package:jo_univ_flutter/views/application_status_view.dart';
 
-import '../models/application_model.dart';
+class ApplicationEditForm extends StatefulWidget {
+  final Application existingApplication;
 
-class ApplicationFormView extends StatefulWidget {
-  const ApplicationFormView({super.key});
+  const ApplicationEditForm({super.key, required this.existingApplication});
 
   @override
-  _ApplicationFormViewState createState() => _ApplicationFormViewState();
+  _ApplicationEditFormState createState() => _ApplicationEditFormState();
 }
 
-class _ApplicationFormViewState extends State<ApplicationFormView> {
+class _ApplicationEditFormState extends State<ApplicationEditForm> {
   final _formKey = GlobalKey<FormState>();
   final ImagePicker _picker = ImagePicker();
   List<XFile>? _selectedDocuments;
-  String applicationStatus = "Fetching...";
-  bool isApplicationComplete = false;
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
-  Application application = Application(
-    id: '',
-    userId: FirebaseAuth.instance.currentUser!.uid,
-    applicantName: '',
-    university: '',
-    program: '',
-    specialization: '',
-    status: 'Pending',
-    submittedAt: DateTime.now(),
-    documentsSubmitted: false,
-  );
+
+  late Application _application;
 
   @override
   void initState() {
     super.initState();
-    _fetchApplicationStatus();
-  }
-
-  // Show local notification
-  Future<void> _showIncompleteFormNotification() async {
-    await NotificationService.showNotification(
-      title: 'Incomplete Application',
-      body:
-          'Your application is incomplete. Please fill in all details to complete your submission.',
+    // Create a copy of the existing application to modify
+    _application = Application(
+      id: widget.existingApplication.id,
+      userId: widget.existingApplication.userId,
+      applicantName: widget.existingApplication.applicantName,
+      university: widget.existingApplication.university,
+      program: widget.existingApplication.program,
+      specialization: widget.existingApplication.specialization,
+      status: 'Incomplete',
+      submittedAt: DateTime.now(),
+      documentsSubmitted: widget.existingApplication.documentsSubmitted,
     );
-  }
-
-  Future<void> _fetchApplicationStatus() async {
-    try {
-      final doc = await FirebaseFirestore.instance
-          .collection('applications')
-          .doc(FirebaseAuth.instance.currentUser!.uid)
-          .get();
-
-      if (doc.exists) {
-        setState(() {
-          applicationStatus = doc.data()?['status'] ?? 'No status available';
-        });
-      } else {
-        setState(() {
-          applicationStatus = "No application found";
-        });
-      }
-    } catch (e) {
-      setState(() {
-        applicationStatus = "Error fetching status";
-      });
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Application Form'),
+        title: const Text('Edit Application'),
         backgroundColor: const Color(0xFF6A11CB),
       ),
       body: Container(
@@ -99,38 +65,27 @@ class _ApplicationFormViewState extends State<ApplicationFormView> {
                 _buildTextField(
                   labelText: 'Name',
                   icon: Icons.person,
-                  initialValue: application.applicantName,
-                  onChanged: (value) => application.applicantName = value,
-                  validator: (value) => value == null || value.isEmpty
-                      ? 'Please enter your name'
-                      : null,
+                  initialValue: _application.applicantName,
+                  onChanged: (value) => _application.applicantName = value,
                 ),
                 const SizedBox(height: 10),
                 _buildTextField(
                   labelText: 'University',
                   icon: Icons.school,
-                  initialValue: application.university,
-                  onChanged: (value) => application.university = value,
-                  validator: (value) => value == null || value.isEmpty
-                      ? 'Please enter your university'
-                      : null,
+                  initialValue: _application.university,
+                  onChanged: (value) => _application.university = value,
                 ),
                 const SizedBox(height: 10),
                 _buildTextField(
                   labelText: 'Program',
                   icon: Icons.book,
-                  initialValue: application.program,
-                  onChanged: (value) => application.program = value,
-                  validator: (value) => value == null || value.isEmpty
-                      ? 'Please enter your program'
-                      : null,
+                  initialValue: _application.program,
+                  onChanged: (value) => _application.program = value,
                 ),
                 const SizedBox(height: 10),
                 _buildSpecializationField(),
                 const SizedBox(height: 10),
                 _buildDocumentUploadSection(),
-                const SizedBox(height: 20),
-                _buildStatusSection(),
                 const SizedBox(height: 30),
                 _buildSubmitButton(),
               ],
@@ -143,7 +98,7 @@ class _ApplicationFormViewState extends State<ApplicationFormView> {
 
   Widget _buildHeader() {
     return const Text(
-      'Application Form',
+      'Complete Your Application',
       textAlign: TextAlign.center,
       style: TextStyle(
         color: Colors.white,
@@ -156,16 +111,16 @@ class _ApplicationFormViewState extends State<ApplicationFormView> {
   Widget _buildTextField({
     required String labelText,
     required IconData icon,
-    required String? initialValue,
+    required String initialValue,
     required Function(String) onChanged,
-    String? Function(String?)? validator,
   }) {
     return TextFormField(
       initialValue: initialValue,
       decoration: _buildInputDecoration(labelText: labelText, icon: icon),
       onChanged: onChanged,
-      validator: validator,
       style: const TextStyle(color: Colors.white),
+      validator: (value) =>
+          value == null || value.isEmpty ? 'Please enter $labelText' : null,
     );
   }
 
@@ -176,9 +131,9 @@ class _ApplicationFormViewState extends State<ApplicationFormView> {
         labelText: 'Specialization',
         icon: Icons.category,
       ),
-      value: application.specialization.isEmpty
+      value: _application.specialization.isEmpty
           ? null
-          : application.specialization,
+          : _application.specialization,
       items: const [
         DropdownMenuItem(value: 'Flutter', child: Text('Flutter')),
         DropdownMenuItem(value: 'Web Dev', child: Text('Web Development')),
@@ -188,7 +143,7 @@ class _ApplicationFormViewState extends State<ApplicationFormView> {
         DropdownMenuItem(value: 'After Effects', child: Text('After Effects')),
       ],
       onChanged: (value) =>
-          setState(() => application.specialization = value ?? ''),
+          setState(() => _application.specialization = value ?? ''),
       validator: (value) => value == null || value.isEmpty
           ? 'Please select a specialization'
           : null,
@@ -233,30 +188,13 @@ class _ApplicationFormViewState extends State<ApplicationFormView> {
     final pickedDocuments = await _picker.pickMultiImage();
     setState(() {
       _selectedDocuments = pickedDocuments;
-      application.documentsSubmitted = pickedDocuments != null;
+      _application.documentsSubmitted = pickedDocuments != null;
     });
-  }
-
-  Widget _buildStatusSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Application Status',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 10),
-        Text(
-          applicationStatus,
-          style: const TextStyle(color: Colors.yellowAccent, fontSize: 16),
-        ),
-      ],
-    );
   }
 
   Widget _buildSubmitButton() {
     return ElevatedButton(
-      onPressed: () => _submitApplication(context),
+      onPressed: _submitApplication,
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -265,52 +203,40 @@ class _ApplicationFormViewState extends State<ApplicationFormView> {
         ),
       ),
       child: const Text(
-        'Submit Application',
+        'Update Application',
         style: TextStyle(color: Color(0xFF6A11CB), fontWeight: FontWeight.bold),
       ),
     );
   }
 
-  Future<void> _submitApplication(BuildContext context) async {
-    final String id =
-        FirebaseFirestore.instance.collection('applications').doc().id;
+  Future<void> _submitApplication() async {
+    if (!_formKey.currentState!.validate()) return;
+
     final firestore = FirebaseFirestore.instance;
     final userId = FirebaseAuth.instance.currentUser!.uid;
 
-    // Check completeness of the form
-    bool isComplete = application.applicantName.isNotEmpty &&
-        application.university.isNotEmpty &&
-        application.program.isNotEmpty &&
-        application.specialization.isNotEmpty;
-
-    final newApplication = {
-      'userId': userId,
-      'id': id,
-      'applicantName': application.applicantName,
-      'university': application.university,
-      'program': application.program,
-      'specialization': application.specialization,
-      'status': isComplete ? 'Complete' : 'Incomplete',
+    final updatedApplication = {
+      'id': userId,
+      'applicantName': _application.applicantName,
+      'university': _application.university,
+      'program': _application.program,
+      'specialization': _application.specialization,
+      'status': 'Complete', // Mark as complete when all fields are filled
       'submittedAt': Timestamp.now(),
       'documentsSubmitted': _selectedDocuments != null,
     };
 
-    await firestore.collection('applications').doc().set(newApplication);
+    await firestore
+        .collection('applications')
+        .doc(_application.id)
+        .update(updatedApplication);
 
-    // Show notification if form is incomplete
-    if (!isComplete) {
-      await _showIncompleteFormNotification();
-    }
-
-    // Optional: Show a snackbar to inform the user about submission status
+    // Show success message
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(isComplete
-            ? 'Application submitted successfully!'
-            : 'Partial application saved. Please complete all details.'),
-      ),
+      const SnackBar(content: Text('Application updated successfully!')),
     );
 
+    // Navigate back to the previous screen
     GoRouter.of(context).pop();
   }
 
@@ -341,5 +267,20 @@ class _ApplicationFormViewState extends State<ApplicationFormView> {
         borderSide: const BorderSide(color: Colors.red, width: 2),
       ),
     );
+  }
+}
+
+// Modify the existing ApplicationStatusView to add edit functionality
+extension ApplicationStatusViewExtension on ApplicationStatusView {
+  void showEditApplicationDialog(
+      BuildContext context, Application application) {
+    if (application.status == 'Incomplete') {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) =>
+              ApplicationEditForm(existingApplication: application),
+        ),
+      );
+    }
   }
 }

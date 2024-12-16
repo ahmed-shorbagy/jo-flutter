@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:jo_univ_flutter/core/utils/App_router.dart';
+import 'package:jo_univ_flutter/core/utils/notifications_service.dart';
 import 'package:jo_univ_flutter/firebase_options.dart';
 
 void main() async {
@@ -8,6 +9,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await NotificationService.initializeNotification();
 
   runApp(const UnivversityApp());
 }

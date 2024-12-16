@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:jo_univ_flutter/core/utils/logger.dart';
 import 'package:jo_univ_flutter/models/application_model.dart';
+import 'package:jo_univ_flutter/views/widgets/application_from_edit.dart';
 
 class ApplicationStatusView extends StatelessWidget {
   const ApplicationStatusView({super.key});
@@ -11,7 +12,7 @@ class ApplicationStatusView extends StatelessWidget {
     final firestore = FirebaseFirestore.instance;
     return firestore
         .collection('applications')
-        .where('id', isEqualTo: userId)
+        .where('userId', isEqualTo: userId)
         .snapshots()
         .map((querySnapshot) => querySnapshot.docs
             .map((doc) => Application.fromFirestore(doc.data(), doc.id))
@@ -149,12 +150,12 @@ class ApplicationStatusView extends StatelessWidget {
       itemCount: applications.length,
       itemBuilder: (context, index) {
         final application = applications[index];
-        return _buildApplicationCard(application);
+        return _buildApplicationCard(application, context);
       },
     );
   }
 
-  Widget _buildApplicationCard(Application application) {
+  Widget _buildApplicationCard(Application application, BuildContext context) {
     final statusColors = {
       "Approved": Colors.green,
       "Pending": Colors.orange,
@@ -163,24 +164,31 @@ class ApplicationStatusView extends StatelessWidget {
 
     final statusColor = statusColors[application.status] ?? Colors.grey;
 
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
-      elevation: 6,
-      shadowColor: Colors.black26,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildApplicationHeader(application, statusColor),
-            const SizedBox(height: 12),
-            _buildApplicationDetails(application),
-            const SizedBox(height: 12),
-            _buildStatusAndDocumentsRow(application, statusColor),
-          ],
+    return GestureDetector(
+      onTap: () {
+        if (application.status == 'Incomplete') {
+          showEditApplicationDialog(context, application);
+        }
+      },
+      child: Card(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+        elevation: 6,
+        shadowColor: Colors.black26,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildApplicationHeader(application, statusColor),
+              const SizedBox(height: 12),
+              _buildApplicationDetails(application),
+              const SizedBox(height: 12),
+              _buildStatusAndDocumentsRow(application, statusColor),
+            ],
+          ),
         ),
       ),
     );
@@ -267,17 +275,14 @@ class ApplicationStatusView extends StatelessWidget {
               application.documentsSubmitted
                   ? Icons.check_circle_outline
                   : Icons.warning_amber_outlined,
-              color: application.documentsSubmitted ? Colors.green : Colors.red,
+              color: Colors.green,
               size: 20,
             ),
             const SizedBox(width: 8),
             Text(
-              application.documentsSubmitted
-                  ? 'Documents Submitted'
-                  : 'Documents Missing',
+              'Documents Submitted',
               style: TextStyle(
-                color:
-                    application.documentsSubmitted ? Colors.green : Colors.red,
+                color: Colors.green,
               ),
             ),
           ],

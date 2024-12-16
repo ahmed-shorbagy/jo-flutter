@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Application {
   final String id;
+  final String userId;
   String applicantName;
   String university;
   String program;
@@ -12,6 +13,7 @@ class Application {
 
   Application({
     required this.id,
+    required this.userId,
     required this.applicantName,
     required this.university,
     required this.program,
@@ -24,6 +26,7 @@ class Application {
   factory Application.fromFirestore(Map<String, dynamic> data, String id) {
     return Application(
       id: id,
+      userId: data['userId'] ?? '',
       applicantName: data['applicantName'] ?? '',
       university: data['university'] ?? '',
       program: data['program'] ?? '',
@@ -38,6 +41,7 @@ class Application {
   Map<String, dynamic> toFirestore() {
     return {
       'id': id,
+      'userId': userId,
       'applicantName': applicantName,
       'university': university,
       'program': program,
@@ -60,6 +64,7 @@ class Application {
   }) {
     return Application(
       id: id ?? this.id,
+      userId: userId,
       applicantName: applicantName ?? this.applicantName,
       university: university ?? this.university,
       program: program ?? this.program,
